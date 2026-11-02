@@ -6,6 +6,9 @@ import Register from './pages/Register';
 import StudentDashboard from './pages/StudentDashboard';
 import LearningMap from './pages/LearningMap';
 import LearningModule from './pages/LearningModule';
+import Challenges from './pages/Challenges';
+import MySubmissions from './pages/MySubmissions';
+import AdminSubmissions from './pages/admin/AdminSubmissions';
 import PlaceholderPage from './pages/PlaceholderPage';
 
 // Loading spinner component
@@ -112,12 +115,7 @@ function App() {
             path="/challenges"
             element={
               <ProtectedRoute>
-                <PlaceholderPage
-                  title="Campus Challenges"
-                  milestone="Milestone 5 (Upcoming)"
-                  description="Browse active sustainability missions, participate in plastic-free drives, and submit photo evidence."
-                  icon="🏆"
-                />
+                <Challenges />
               </ProtectedRoute>
             }
           />
@@ -125,12 +123,15 @@ function App() {
             path="/challenges/:id"
             element={
               <ProtectedRoute>
-                <PlaceholderPage
-                  title="Challenge Details & Evidence Submission"
-                  milestone="Milestone 5 (Upcoming)"
-                  description="Submit photo proof and descriptions for administrator verification and reward points."
-                  icon="📸"
-                />
+                <Challenges />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-submissions"
+            element={
+              <ProtectedRoute>
+                <MySubmissions />
               </ProtectedRoute>
             }
           />
@@ -179,12 +180,15 @@ function App() {
             path="/admin"
             element={
               <ProtectedRoute adminOnly>
-                <PlaceholderPage
-                  title="Admin Dashboard"
-                  milestone="Milestone 6 (Upcoming)"
-                  description="Administrative review of student photo submissions, module management, and institutional analytics."
-                  icon="🛡️"
-                />
+                <AdminSubmissions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/submissions"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminSubmissions />
               </ProtectedRoute>
             }
           />

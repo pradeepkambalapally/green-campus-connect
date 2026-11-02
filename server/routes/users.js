@@ -270,4 +270,46 @@ router.get('/me/badges', protect, async (req, res, next) => {
   }
 });
 
+// @route   GET /api/users/me/challenges
+// @desc    Get all challenges joined by the authenticated student
+// @access  Private
+router.get('/me/challenges', protect, async (req, res, next) => {
+  try {
+    const challenges = await Challenge.find({
+      participants: req.user.id,
+    }).sort('-createdAt');
+
+    const submissions = await ChallengeSubmission.find({ userId: req.user.id });
+
+    const challengesWithSubmission = challenges.map(ch => {
+      const sub = submissions.find(s => s.challengeId.toString() === ch._id.toString());
+      return {
+        ...ch.toObject(),
+        hasJoined: true,
+        submissionStatus: sub ? sub.status : null,
+        submission: sub || null,
+      };
+    });
+
+    res.json({ success: true, challenges: challengesWithSubmission });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @route   GET /api/users/me/submissions
+// @desc    Get all challenge submissions made by the authenticated student
+// @access  Private
+router.get('/me/submissions', protect, async (req, res, next) => {
+  try {
+    const submissions = await ChallengeSubmission.find({ userId: req.user.id })
+      .populate('challengeId', 'title category difficulty rewardXP icon endDate')
+      .sort('-createdAt');
+
+    res.json({ success: true, submissions });
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;

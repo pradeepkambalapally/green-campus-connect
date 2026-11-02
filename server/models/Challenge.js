@@ -6,9 +6,18 @@ const challengeSchema = new mongoose.Schema({
     required: [true, 'Challenge title is required'],
     trim: true,
   },
+  slug: {
+    type: String,
+    trim: true,
+    lowercase: true,
+  },
   description: {
     type: String,
     required: [true, 'Description is required'],
+  },
+  whyItMatters: {
+    type: String,
+    default: '',
   },
   category: {
     type: String,
@@ -28,6 +37,7 @@ const challengeSchema = new mongoose.Schema({
   startDate: {
     type: Date,
     required: true,
+    default: Date.now,
   },
   endDate: {
     type: Date,
@@ -41,6 +51,10 @@ const challengeSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  submissionRules: {
+    type: String,
+    default: 'Submit an authentic, original photograph captured on campus grounds showing the required sustainable activity. Clear lighting and visibility required.',
+  },
   participants: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -53,11 +67,16 @@ const challengeSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
 }, {
   timestamps: true,
 });
 
 challengeSchema.index({ category: 1 });
 challengeSchema.index({ endDate: 1 });
+challengeSchema.index({ slug: 1 });
 
 module.exports = mongoose.model('Challenge', challengeSchema);

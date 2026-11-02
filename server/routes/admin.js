@@ -54,26 +54,83 @@ router.get('/analytics', async (req, res, next) => {
 });
 
 // @route   GET /api/admin/submissions
-// @desc    Get all submissions
+// @desc    Get all submissions with filtering by status and category
 // @access  Admin
 router.get('/submissions', async (req, res, next) => {
   try {
-    const { status } = req.query;
-    const filter = status ? { status } : {};
+    const { status, category, search } = req.query;
+    const filter = {};
 
-    const submissions = await ChallengeSubmission.find(filter)
-      .populate('userId', 'name email')
-      .populate('challengeId', 'title category')
+    if (status && status !== 'all') {
+      filter.status = status;
+    }
+
+    let submissions = await ChallengeSubmission.find(filter)
+      .populate('userId', 'name email avatar level xp')
+      .populate('challengeId', 'title category difficulty rewardXP icon instructions evidenceRequirements')
+      .populate('reviewedBy', 'name email')
       .sort('-createdAt');
 
-    res.json({ success: true, submissions });
+    // Filter by challenge category if provided
+    if (category && category !== 'all') {
+      submissions = submissions.filter(s => s.challengeId?.category === category);
+    }
+
+    // Search filter across student name, student email, and challenge title
+    if (search) {
+      const term = search.toLowerCase();
+      submissions = submissions.filter(s =>
+        s.userId?.name?.toLowerCase().includes(term) ||
+        s.userId?.email?.toLowerCase().includes(term) ||
+        s.challengeId?.title?.toLowerCase().includes(term) ||
+        s.description?.toLowerCase().includes(term)
+      );
+    }
+
+    // Counts for tab badges
+    const [pendingCount, approvedCount, rejectedCount] = await Promise.all([
+      ChallengeSubmission.countDocuments({ status: 'pending' }),
+      ChallengeSubmission.countDocuments({ status: 'approved' }),
+      ChallengeSubmission.countDocuments({ status: 'rejected' }),
+    ]);
+
+    res.json({
+      success: true,
+      submissions,
+      counts: {
+        total: pendingCount + approvedCount + rejectedCount,
+        pending: pendingCount,
+        approved: approvedCount,
+        rejected: rejectedCount,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @route   GET /api/admin/submissions/:id
+// @desc    Get specific submission details
+// @access  Admin
+router.get('/submissions/:id', async (req, res, next) => {
+  try {
+    const submission = await ChallengeSubmission.findById(req.params.id)
+      .populate('userId', 'name email avatar level xp streak')
+      .populate('challengeId')
+      .populate('reviewedBy', 'name email');
+
+    if (!submission) {
+      return res.status(404).json({ success: false, message: 'Submission not found' });
+    }
+
+    res.json({ success: true, submission });
   } catch (error) {
     next(error);
   }
 });
 
 // @route   PATCH /api/admin/submissions/:id/approve
-// @desc    Approve a submission
+// @desc    Approve a submission (atomically awards XP from database challenge model)
 // @access  Admin
 router.patch('/submissions/:id/approve', async (req, res, next) => {
   try {
@@ -82,37 +139,59 @@ router.patch('/submissions/:id/approve', async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Submission not found' });
     }
 
-    if (submission.status !== 'pending') {
-      return res.status(400).json({ success: false, message: 'Submission already reviewed' });
+    // Prevent duplicate approval or re-approving
+    if (submission.status === 'approved') {
+      return res.status(400).json({ success: false, message: 'Submission has already been approved previously.' });
     }
 
+    const challenge = await Challenge.findById(submission.challengeId);
+    if (!challenge) {
+      return res.status(404).json({ success: false, message: 'Associated challenge not found' });
+    }
+
+    const reward = challenge.rewardXP || 50;
+
+    // Mark approved
     submission.status = 'approved';
+    submission.xpAwarded = reward;
+    submission.rejectReason = '';
     submission.reviewedBy = req.user.id;
     submission.reviewedAt = new Date();
     await submission.save();
 
-    // Award XP
-    const challenge = await Challenge.findById(submission.challengeId);
+    // Award XP to student
     const user = await User.findById(submission.userId);
-    user.xp += challenge.rewardXP;
-    user.calculateLevel();
-    await user.save();
+    if (user) {
+      user.xp += reward;
+      user.calculateLevel();
+      await user.save();
 
-    await ActivityLog.create({
-      userId: submission.userId,
-      type: 'submission_approved',
-      description: `Submission approved for: ${challenge.title}`,
-      metadata: { challengeId: challenge._id, xpEarned: challenge.rewardXP },
+      // Log verified activity
+      await ActivityLog.create({
+        userId: submission.userId,
+        type: 'submission_approved',
+        description: `Evidence approved for "${challenge.title}"! (+${reward} XP)`,
+        metadata: { challengeId: challenge._id, xpEarned: reward, submissionId: submission._id },
+      });
+    }
+
+    const populatedSubmission = await ChallengeSubmission.findById(submission._id)
+      .populate('userId', 'name email avatar level xp')
+      .populate('challengeId', 'title category difficulty rewardXP icon')
+      .populate('reviewedBy', 'name email');
+
+    res.json({
+      success: true,
+      message: `Submission approved! ${reward} XP awarded to student.`,
+      submission: populatedSubmission,
     });
-
-    res.json({ success: true, submission });
   } catch (error) {
     next(error);
   }
 });
 
 // @route   PATCH /api/admin/submissions/:id/reject
-// @desc    Reject a submission
+// @desc    Reject a submission with a mandatory or optional reason
 // @access  Admin
 router.patch('/submissions/:id/reject', async (req, res, next) => {
   try {
@@ -122,24 +201,38 @@ router.patch('/submissions/:id/reject', async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Submission not found' });
     }
 
-    if (submission.status !== 'pending') {
-      return res.status(400).json({ success: false, message: 'Submission already reviewed' });
+    if (submission.status === 'approved') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot reject an already approved submission that has granted XP.',
+      });
     }
 
     submission.status = 'rejected';
-    submission.rejectReason = reason || 'No reason provided';
+    submission.rejectReason = reason || 'Evidence image was unclear or did not demonstrate the required campus activity. Please review instructions and resubmit.';
     submission.reviewedBy = req.user.id;
     submission.reviewedAt = new Date();
     await submission.save();
 
+    const challenge = await Challenge.findById(submission.challengeId);
+
     await ActivityLog.create({
       userId: submission.userId,
       type: 'submission_rejected',
-      description: `Submission rejected for challenge`,
-      metadata: { challengeId: submission.challengeId, reason: submission.rejectReason },
+      description: `Submission for "${challenge?.title || 'Challenge'}" was reviewed: revision requested`,
+      metadata: { challengeId: submission.challengeId, reason: submission.rejectReason, submissionId: submission._id },
     });
 
-    res.json({ success: true, submission });
+    const populatedSubmission = await ChallengeSubmission.findById(submission._id)
+      .populate('userId', 'name email avatar level xp')
+      .populate('challengeId', 'title category difficulty rewardXP icon')
+      .populate('reviewedBy', 'name email');
+
+    res.json({
+      success: true,
+      message: 'Submission has been marked as rejected with feedback.',
+      submission: populatedSubmission,
+    });
   } catch (error) {
     next(error);
   }
@@ -150,7 +243,10 @@ router.patch('/submissions/:id/reject', async (req, res, next) => {
 // @access  Admin
 router.post('/challenges', async (req, res, next) => {
   try {
-    const challenge = await Challenge.create(req.body);
+    const challenge = await Challenge.create({
+      ...req.body,
+      createdBy: req.user.id,
+    });
     res.status(201).json({ success: true, challenge });
   } catch (error) {
     next(error);

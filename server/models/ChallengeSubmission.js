@@ -14,7 +14,7 @@ const challengeSubmissionSchema = new mongoose.Schema({
   description: {
     type: String,
     required: [true, 'Submission description is required'],
-    maxlength: [500, 'Description cannot exceed 500 characters'],
+    maxlength: [1000, 'Description cannot exceed 1000 characters'],
   },
   imageUrl: {
     type: String,
@@ -39,6 +39,14 @@ const challengeSubmissionSchema = new mongoose.Schema({
   },
   reviewedAt: {
     type: Date,
+  },
+  xpAwarded: {
+    type: Number,
+    default: 0,
+  },
+  resubmissionCount: {
+    type: Number,
+    default: 0,
   },
 }, {
   timestamps: true,

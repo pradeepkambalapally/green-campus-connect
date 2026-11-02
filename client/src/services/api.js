@@ -19,7 +19,6 @@ API.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      // Only redirect if not already on login or register
       if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
         window.location.href = '/login';
       }
@@ -51,12 +50,30 @@ export const quizzesAPI = {
   submit: (moduleId, answers) => API.post(`/quizzes/${moduleId}/submit`, { answers }),
 };
 
-// Challenges
+// Challenges & Evidence Submissions
 export const challengesAPI = {
-  getAll: () => API.get('/challenges'),
+  getAll: (params) => API.get('/challenges', { params }),
   getOne: (id) => API.get(`/challenges/${id}`),
   join: (id) => API.post(`/challenges/${id}/join`),
+  getParticipation: (id) => API.get(`/challenges/${id}/participation`),
+  submit: (id, data) => API.post(`/challenges/${id}/submit`, data),
+  uploadEvidence: (formData) =>
+    API.post('/submissions/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
   submitEvidence: (data) => API.post('/submissions', data),
+  getMySubmissions: () => API.get('/submissions/me'),
+  getMyChallenges: () => API.get('/users/me/challenges'),
+};
+
+// Submissions alias
+export const submissionsAPI = {
+  uploadEvidence: (formData) =>
+    API.post('/submissions/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  submit: (data) => API.post('/submissions', data),
+  getMySubmissions: () => API.get('/submissions/me'),
 };
 
 // Users & Dashboard
@@ -65,6 +82,8 @@ export const usersAPI = {
   getBadges: () => API.get('/users/me/badges'),
   getDashboard: () => API.get('/users/me/dashboard'),
   getLearningProgress: () => API.get('/users/me/learning-progress'),
+  getMyChallenges: () => API.get('/users/me/challenges'),
+  getMySubmissions: () => API.get('/users/me/submissions'),
 };
 
 export const dashboardAPI = {
@@ -79,7 +98,8 @@ export const leaderboardAPI = {
 // Admin
 export const adminAPI = {
   getAnalytics: () => API.get('/admin/analytics'),
-  getSubmissions: (status) => API.get(`/admin/submissions${status ? `?status=${status}` : ''}`),
+  getSubmissions: (params) => API.get('/admin/submissions', { params }),
+  getSubmission: (id) => API.get(`/admin/submissions/${id}`),
   approveSubmission: (id) => API.patch(`/admin/submissions/${id}/approve`),
   rejectSubmission: (id, reason) => API.patch(`/admin/submissions/${id}/reject`, { reason }),
   createChallenge: (data) => API.post('/admin/challenges', data),

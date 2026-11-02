@@ -14,6 +14,7 @@ import {
   Flame,
   ChevronRight,
   Shield,
+  ClipboardCheck,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -23,6 +24,7 @@ const NAV_ITEMS = [
   { name: 'My Learning', path: '/my-learning', icon: BookOpen },
   { name: 'Quizzes', path: '/quizzes', icon: HelpCircle },
   { name: 'Challenges', path: '/challenges', icon: Trophy },
+  { name: 'My Submissions', path: '/my-submissions', icon: ClipboardCheck },
   { name: 'Leaderboard', path: '/leaderboard', icon: Trophy },
   { name: 'My Badges', path: '/badges', icon: Award },
   { name: 'Profile', path: '/profile', icon: User },
