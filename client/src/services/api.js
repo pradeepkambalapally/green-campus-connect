@@ -19,7 +19,10 @@ API.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      // Only redirect if not already on login or register
+      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -53,10 +56,15 @@ export const challengesAPI = {
   submitEvidence: (data) => API.post('/submissions', data),
 };
 
-// Users
+// Users & Dashboard
 export const usersAPI = {
   getProgress: () => API.get('/users/me/progress'),
   getBadges: () => API.get('/users/me/badges'),
+  getDashboard: () => API.get('/users/me/dashboard'),
+};
+
+export const dashboardAPI = {
+  getStudentDashboard: () => API.get('/users/me/dashboard'),
 };
 
 // Leaderboard
