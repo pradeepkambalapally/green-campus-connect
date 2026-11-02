@@ -147,6 +147,7 @@ router.get('/me/dashboard', protect, async (req, res, next) => {
           completedModulesCount,
           totalModulesCount,
           challengesJoinedCount,
+          completedChallengesCount: userSubmissions.filter(s => s.status === 'approved').length,
           badgesCount,
         },
         learningJourney: {
