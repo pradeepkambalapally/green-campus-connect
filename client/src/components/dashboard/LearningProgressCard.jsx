@@ -117,3 +117,4 @@ const LearningProgressCard = ({ learningJourney }) => {
 };
 
 export default LearningProgressCard;
+

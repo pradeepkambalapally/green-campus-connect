@@ -152,3 +152,4 @@ const ActiveChallenges = ({ challenges = [] }) => {
 };
 
 export default ActiveChallenges;
+

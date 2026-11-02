@@ -58,3 +58,4 @@ const PlaceholderPage = ({ title, milestone, description, icon = '🌱' }) => {
 };
 
 export default PlaceholderPage;
+

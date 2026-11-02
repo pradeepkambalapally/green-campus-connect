@@ -135,3 +135,4 @@ const ActivityFeed = ({ activities = [] }) => {
 };
 
 export default ActivityFeed;
+

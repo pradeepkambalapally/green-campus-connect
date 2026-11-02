@@ -35,11 +35,14 @@ export const authAPI = {
   getMe: () => API.get('/auth/me'),
 };
 
-// Modules
+// Modules & Learning Map
 export const modulesAPI = {
   getAll: () => API.get('/modules'),
   getOne: (id) => API.get(`/modules/${id}`),
+  getProgress: (id) => API.get(`/modules/${id}/progress`),
+  updateProgress: (id, data) => API.patch(`/modules/${id}/progress`, data),
   complete: (id) => API.post(`/modules/${id}/complete`),
+  getLearningProgress: () => API.get('/users/me/learning-progress'),
 };
 
 // Quizzes
@@ -61,6 +64,7 @@ export const usersAPI = {
   getProgress: () => API.get('/users/me/progress'),
   getBadges: () => API.get('/users/me/badges'),
   getDashboard: () => API.get('/users/me/dashboard'),
+  getLearningProgress: () => API.get('/users/me/learning-progress'),
 };
 
 export const dashboardAPI = {

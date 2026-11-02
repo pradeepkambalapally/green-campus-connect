@@ -6,6 +6,7 @@ const QuizAttempt = require('../models/QuizAttempt');
 const Challenge = require('../models/Challenge');
 const ChallengeSubmission = require('../models/ChallengeSubmission');
 const LearningModule = require('../models/LearningModule');
+const ModuleProgress = require('../models/ModuleProgress');
 const Badge = require('../models/Badge');
 const UserBadge = require('../models/UserBadge');
 const ActivityLog = require('../models/ActivityLog');
@@ -161,6 +162,58 @@ router.get('/me/dashboard', protect, async (req, res, next) => {
         recentActivities,
         leaderboardPreview,
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @route   GET /api/users/me/learning-progress
+// @desc    Get current student's overall learning journey progress across the 5 destinations
+// @access  Private
+router.get('/me/learning-progress', protect, async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).populate('completedModules', 'title destination order xpReward');
+    const modules = await LearningModule.find({ isActive: true }).sort('order');
+    const progressList = await ModuleProgress.find({ userId: req.user.id });
+
+    const completedIds = (user?.completedModules || []).map(m => m._id.toString());
+
+    let previousCompleted = true;
+    const destinationsProgress = modules.map((mod, index) => {
+      const isCompleted = completedIds.includes(mod._id.toString());
+      const isLocked = !previousCompleted;
+      const isAvailable = !isLocked && !isCompleted;
+      const prog = progressList.find(p => p.moduleId.toString() === mod._id.toString());
+
+      previousCompleted = isCompleted;
+
+      return {
+        moduleId: mod._id,
+        order: mod.order,
+        destination: mod.destination,
+        title: mod.title,
+        icon: mod.icon,
+        xpReward: mod.xpReward,
+        isCompleted,
+        isLocked,
+        isAvailable,
+        readingCompleted: prog?.readingCompleted || false,
+        quizCompleted: prog?.quizCompleted || false,
+      };
+    });
+
+    const completedCount = completedIds.length;
+    const totalCount = modules.length;
+    const overallProgressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+    res.json({
+      success: true,
+      destinationsProgress,
+      totalDestinations: totalCount,
+      completedDestinations: completedCount,
+      overallProgressPercent,
+      currentXp: user.xp || 0,
     });
   } catch (error) {
     next(error);

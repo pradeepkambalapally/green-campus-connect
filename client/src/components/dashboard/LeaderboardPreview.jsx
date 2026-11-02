@@ -137,3 +137,4 @@ const LeaderboardPreview = ({ leaderboardData, currentUserId }) => {
 };
 
 export default LeaderboardPreview;
+

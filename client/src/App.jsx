@@ -4,6 +4,8 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import StudentDashboard from './pages/StudentDashboard';
+import LearningMap from './pages/LearningMap';
+import LearningModule from './pages/LearningModule';
 import PlaceholderPage from './pages/PlaceholderPage';
 
 // Loading spinner component
@@ -78,12 +80,7 @@ function App() {
             path="/learning-map"
             element={
               <ProtectedRoute>
-                <PlaceholderPage
-                  title="Interactive Learning Map"
-                  milestone="Milestone 3 (Upcoming)"
-                  description="The 5-destination SVG adventure map connecting Forest of Waste Wisdom, Water World, Energy Valley, Green Mobility Trail, and Eco Living Island."
-                  icon="🗺️"
-                />
+                <LearningMap />
               </ProtectedRoute>
             }
           />
@@ -91,12 +88,15 @@ function App() {
             path="/my-learning"
             element={
               <ProtectedRoute>
-                <PlaceholderPage
-                  title="My Learning Modules"
-                  milestone="Milestone 3 (Upcoming)"
-                  description="View all sustainability course materials, study topics, and track completed lessons."
-                  icon="📚"
-                />
+                <LearningMap />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/modules/:id"
+            element={
+              <ProtectedRoute>
+                <LearningModule />
               </ProtectedRoute>
             }
           />
@@ -104,12 +104,7 @@ function App() {
             path="/quizzes"
             element={
               <ProtectedRoute>
-                <PlaceholderPage
-                  title="Sustainability Quizzes"
-                  milestone="Milestone 4 (Upcoming)"
-                  description="Interactive question banks, immediate explanation feedback, and server-side verified scoring for XP."
-                  icon="❓"
-                />
+                <LearningMap />
               </ProtectedRoute>
             }
           />

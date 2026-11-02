@@ -87,3 +87,4 @@ const DashboardHeader = ({ onOpenSidebar, profile }) => {
 };
 
 export default DashboardHeader;
+

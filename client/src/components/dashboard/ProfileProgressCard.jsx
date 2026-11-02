@@ -135,3 +135,4 @@ const ProfileProgressCard = ({ profile }) => {
 };
 
 export default ProfileProgressCard;
+

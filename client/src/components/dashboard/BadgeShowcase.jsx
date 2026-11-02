@@ -85,3 +85,4 @@ const BadgeShowcase = ({ badges = [] }) => {
 };
 
 export default BadgeShowcase;
+
