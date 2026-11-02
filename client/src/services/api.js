@@ -1,0 +1,80 @@
+import axios from 'axios';
+
+const API = axios.create({
+  baseURL: '/api',
+});
+
+// Request interceptor to add token
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Response interceptor for error handling
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Auth
+export const authAPI = {
+  register: (data) => API.post('/auth/register', data),
+  login: (data) => API.post('/auth/login', data),
+  getMe: () => API.get('/auth/me'),
+};
+
+// Modules
+export const modulesAPI = {
+  getAll: () => API.get('/modules'),
+  getOne: (id) => API.get(`/modules/${id}`),
+  complete: (id) => API.post(`/modules/${id}/complete`),
+};
+
+// Quizzes
+export const quizzesAPI = {
+  getQuestions: (moduleId) => API.get(`/quizzes/${moduleId}`),
+  submit: (moduleId, answers) => API.post(`/quizzes/${moduleId}/submit`, { answers }),
+};
+
+// Challenges
+export const challengesAPI = {
+  getAll: () => API.get('/challenges'),
+  getOne: (id) => API.get(`/challenges/${id}`),
+  join: (id) => API.post(`/challenges/${id}/join`),
+  submitEvidence: (data) => API.post('/submissions', data),
+};
+
+// Users
+export const usersAPI = {
+  getProgress: () => API.get('/users/me/progress'),
+  getBadges: () => API.get('/users/me/badges'),
+};
+
+// Leaderboard
+export const leaderboardAPI = {
+  get: (limit) => API.get(`/leaderboard?limit=${limit || 20}`),
+};
+
+// Admin
+export const adminAPI = {
+  getAnalytics: () => API.get('/admin/analytics'),
+  getSubmissions: (status) => API.get(`/admin/submissions${status ? `?status=${status}` : ''}`),
+  approveSubmission: (id) => API.patch(`/admin/submissions/${id}/approve`),
+  rejectSubmission: (id, reason) => API.patch(`/admin/submissions/${id}/reject`, { reason }),
+  createChallenge: (data) => API.post('/admin/challenges', data),
+  updateChallenge: (id, data) => API.put(`/admin/challenges/${id}`, data),
+  deleteChallenge: (id) => API.delete(`/admin/challenges/${id}`),
+  createModule: (data) => API.post('/admin/modules', data),
+  updateModule: (id, data) => API.put(`/admin/modules/${id}`, data),
+};
+
+export default API;
