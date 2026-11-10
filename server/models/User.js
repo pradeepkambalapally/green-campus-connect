@@ -51,6 +51,20 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  bio: {
+    type: String,
+    maxlength: [300, 'Bio cannot exceed 300 characters'],
+    default: '',
+  },
+  department: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  yearOfStudy: {
+    type: String,
+    default: '',
+  },
 }, {
   timestamps: true,
 });

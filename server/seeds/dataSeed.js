@@ -70,6 +70,46 @@ const seedData = async () => {
         criteriaType: 'special',
         criteriaValue: 'all_modules',
       },
+      {
+        name: 'Action Hero',
+        description: 'Submitted first approved sustainability challenge evidence',
+        icon: '📸',
+        criteria: 'Have at least 1 challenge submission verified and approved',
+        criteriaType: 'challenge_complete',
+        criteriaValue: 1,
+      },
+      {
+        name: 'Campus Clean Champion',
+        description: 'Completed 3 verified sustainability challenges',
+        icon: '🌟',
+        criteria: 'Have 3 challenge submissions verified and approved',
+        criteriaType: 'challenge_complete',
+        criteriaValue: 3,
+      },
+      {
+        name: 'Streak Starter',
+        description: 'Logged active campus sustainability participation 2 days in a row',
+        icon: '🔥',
+        criteria: 'Maintain a 2-day activity streak',
+        criteriaType: 'streak',
+        criteriaValue: 2,
+      },
+      {
+        name: 'Eco Centurion',
+        description: 'Reached 500 sustainability XP and advanced to Level 2',
+        icon: '🎖️',
+        criteria: 'Earn 500 total XP',
+        criteriaType: 'xp_threshold',
+        criteriaValue: 500,
+      },
+      {
+        name: 'Green Master',
+        description: 'Accumulated 1,000 sustainability XP across learning and real-world challenges',
+        icon: '👑',
+        criteria: 'Earn 1,000 total XP',
+        criteriaType: 'xp_threshold',
+        criteriaValue: 1000,
+      },
     ];
 
     for (const b of badgesData) {

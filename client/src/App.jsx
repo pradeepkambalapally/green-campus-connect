@@ -9,6 +9,9 @@ import LearningModule from './pages/LearningModule';
 import Challenges from './pages/Challenges';
 import MySubmissions from './pages/MySubmissions';
 import AdminSubmissions from './pages/admin/AdminSubmissions';
+import Leaderboard from './pages/Leaderboard';
+import Badges from './pages/Badges';
+import Profile from './pages/Profile';
 import PlaceholderPage from './pages/PlaceholderPage';
 
 // Loading spinner component
@@ -139,12 +142,7 @@ function App() {
             path="/leaderboard"
             element={
               <ProtectedRoute>
-                <PlaceholderPage
-                  title="Campus Leaderboard"
-                  milestone="Milestone 7 (Upcoming)"
-                  description="Compare total sustainability XP, track peer rankings, and celebrate the top eco champions."
-                  icon="👑"
-                />
+                <Leaderboard />
               </ProtectedRoute>
             }
           />
@@ -152,12 +150,7 @@ function App() {
             path="/badges"
             element={
               <ProtectedRoute>
-                <PlaceholderPage
-                  title="My Badges & Accolades"
-                  milestone="Milestone 7 (Upcoming)"
-                  description="View unlocked achievements like Eco Beginner, Water Guardian, and Waste Warrior."
-                  icon="🏅"
-                />
+                <Badges />
               </ProtectedRoute>
             }
           />
@@ -165,12 +158,7 @@ function App() {
             path="/profile"
             element={
               <ProtectedRoute>
-                <PlaceholderPage
-                  title="Student Profile"
-                  milestone="Student Settings"
-                  description="Manage your student sustainability profile, avatar, credentials, and track your all-time metrics."
-                  icon="👤"
-                />
+                <Profile />
               </ProtectedRoute>
             }
           />

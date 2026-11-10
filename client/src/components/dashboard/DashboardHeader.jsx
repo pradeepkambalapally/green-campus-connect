@@ -10,11 +10,13 @@ const getInitials = (name = '') => {
   return name.slice(0, 2).toUpperCase();
 };
 
-const DashboardHeader = ({ onOpenSidebar, profile }) => {
-  const name = profile?.name || 'Student';
+const DashboardHeader = ({ onOpenSidebar, onMenuClick, profile, studentData }) => {
+  const activeProfile = profile || studentData?.profile;
+  const name = activeProfile?.name || 'Student';
   const initials = getInitials(name);
-  const xp = profile?.xp ?? 0;
-  const level = profile?.level ?? 1;
+  const xp = activeProfile?.xp ?? 0;
+  const level = activeProfile?.level ?? 1;
+  const handleOpen = onOpenSidebar || onMenuClick;
 
   return (
     <header className="sticky top-0 z-20 bg-cream/80 backdrop-blur-md border-b border-emerald-100/60 px-4 sm:px-6 lg:px-8 py-3.5 transition-all">
@@ -22,7 +24,7 @@ const DashboardHeader = ({ onOpenSidebar, profile }) => {
         {/* Left: Mobile menu toggle & page greeting */}
         <div className="flex items-center gap-3">
           <button
-            onClick={onOpenSidebar}
+            onClick={handleOpen}
             className="lg:hidden p-2 rounded-xl text-gray-600 hover:text-emerald-800 hover:bg-emerald-100/50 transition-colors"
             aria-label="Open navigation menu"
           >
@@ -65,12 +67,16 @@ const DashboardHeader = ({ onOpenSidebar, profile }) => {
             className="flex items-center gap-2 p-1 pl-1.5 pr-2 rounded-full hover:bg-white/80 transition-colors border border-transparent hover:border-emerald-200"
             title="View Profile"
           >
-            {profile?.avatar ? (
+            {activeProfile?.avatar && (activeProfile.avatar.startsWith('http') || activeProfile.avatar.startsWith('/uploads')) ? (
               <img
-                src={profile.avatar}
+                src={activeProfile.avatar}
                 alt={name}
                 className="w-8 h-8 rounded-full object-cover border-2 border-emerald-500"
               />
+            ) : activeProfile?.avatar ? (
+              <div className="w-8 h-8 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center text-sm shadow-sm">
+                {activeProfile.avatar}
+              </div>
             ) : (
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-600 to-forest flex items-center justify-center text-white text-xs font-bold shadow-sm">
                 {initials}

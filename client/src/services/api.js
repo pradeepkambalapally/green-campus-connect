@@ -78,6 +78,12 @@ export const submissionsAPI = {
 
 // Users & Dashboard
 export const usersAPI = {
+  getProfile: () => API.get('/users/me/profile'),
+  updateProfile: (data) => API.put('/users/me/profile', data),
+  uploadAvatar: (formData) =>
+    API.post('/users/me/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
   getProgress: () => API.get('/users/me/progress'),
   getBadges: () => API.get('/users/me/badges'),
   getDashboard: () => API.get('/users/me/dashboard'),
@@ -92,7 +98,12 @@ export const dashboardAPI = {
 
 // Leaderboard
 export const leaderboardAPI = {
-  get: (limit) => API.get(`/leaderboard?limit=${limit || 20}`),
+  get: (params) => {
+    if (typeof params === 'number') {
+      return API.get(`/leaderboard?limit=${params}`);
+    }
+    return API.get('/leaderboard', { params });
+  },
 };
 
 // Admin
